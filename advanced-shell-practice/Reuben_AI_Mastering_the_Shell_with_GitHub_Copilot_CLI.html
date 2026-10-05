@@ -59,7 +59,7 @@
     <div class="img-box">
       <img src="copilot-cli-terminal.png" alt="Copilot CLI terminal prompt and response; lower part of response is cropped" />
     </div>
-    <p class="warning">This is a terminal screenshot of the Copilot CLI response. The lower edge is cropped, so the final command is not visible; recapture the full response if possible.</p>
+    <p class="note">The screenshot shows the complete Copilot CLI prompt and response, including the suggested commands and safety explanation.</p>
   </div>
 
   <div class="section">
@@ -68,15 +68,18 @@
       <strong>Terminal prompt:</strong> “I committed locally but haven't pushed yet. I want to combine the last two commits into a single commit with a new message. Use the git agent if available; otherwise explain the safest command and why.”
     </p>
     <p class="note">
-      The terminal CLI checked the current repository and found only one commit, so it warned that <code>HEAD~2</code> could not be used safely yet. The command below applies only when the branch has at least two local, unpushed commits.
+      This prompt gives the local/unpushed context, states the desired history change, names the preferred git agent, and requests a safety explanation. That specificity asks the CLI to address the real Git workflow rather than return a generic command.
+    </p>
+    <p class="note">
+      The CLI reported that no git-named agent was available, so it adapted by using shell checks. It inspected the latest commits and branch status, found that <code>main</code> had only one commit and matched <code>origin/main</code>, and correctly warned that there were no two local commits to combine. It also noted the untracked assignment directory and said the proposed commands would leave it untouched.
     </p>
   </div>
 
   <div class="section">
-    <h2>Git Command</h2>
-    <p><code>git reset --soft HEAD~2</code><br /><code>git commit -m "Your new commit message"</code></p>
+    <h2>Suggested Commands (Only for Two Local, Unpushed Commits)</h2>
+    <p><code>git branch backup-before-squash HEAD</code><br /><code>git reset --soft HEAD~2</code><br /><code>git commit -m "New commit message"</code></p>
     <p class="note">
-      The soft reset moves the branch back two commits while keeping their combined changes staged. The new commit records those changes under the replacement message. Verify the branch, history, and working tree before running it.
+      The backup branch preserves the original tip. The soft reset moves the current branch back two commits while keeping their combined changes staged, and the new commit records those changes under one message. These commands were not run: the current checkout did not meet the two-commit condition. Confirm the intended branch and a clean, verified worktree before applying them.
     </p>
   </div>
 
@@ -84,17 +87,15 @@
     <h2>Accuracy Ranking and Justification</h2>
     <p class="rating">Rating: 8/10</p>
     <p class="note">
-      The command is correct when the last two commits are local and unpushed, but the initial answer did not warn me to verify that condition or explain what changes if commits have already been pushed. Rewriting published history can disrupt collaborators and may require a carefully coordinated force-push, so it should not be done casually.
+      The CLI made this task more efficient by checking the actual branch and commit history before recommending a history rewrite; that prevented me from applying <code>HEAD~2</code> to a checkout with only one commit. Its suggested sequence is appropriate for two local, unpushed commits, and the backup branch adds a recovery point. I did not give it 10/10 because the requested git agent was unavailable and the workflow could not be demonstrated on the intended two-commit history. If commits have already been pushed, rewriting shared history can disrupt collaborators and any force-push must be coordinated.
     </p>
   </div>
 
   <div class="section">
     <h2>Comparison with <code>git rebase -i</code></h2>
     <p class="note">
-      An interactive rebase, such as <code>git rebase -i HEAD~2</code>, lets me choose squash or fixup and edit the combined message. It is more flexible if I need to reorder, drop, or edit commits; the soft-reset approach is shorter when I simply want to combine the last two commits under a new message.
+      An interactive rebase, such as <code>git rebase -i HEAD~2</code>, lets me choose squash or fixup and edit the combined message in the sequence editor. It is preferable when I need to reorder, drop, or selectively edit commits. The soft-reset approach is more direct when I simply want to combine exactly the last two commits under one new message.
     </p>
   </div>
-
-  <p class="warning">Before submitting, replace the app screenshot with a legible screenshot of the Copilot CLI running in a terminal if terminal evidence is required.</p>
 </body>
 </html>
